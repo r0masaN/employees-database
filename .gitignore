@@ -1,0 +1,9 @@
+# .gitignore для CLion (CMake + Windows)
+cmake-build-*
+*.exe
+*.o
+*.obj
+*.log
+*.ninja
+*.cmake
+.idea/
