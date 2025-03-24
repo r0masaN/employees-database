@@ -6,7 +6,7 @@ A simple employee database management system written in C. Currently, the databa
 
 - Add new employees
 - Search for employees by various criteria
-- - Display all employees
+- Display all employees
 
 ## Upcoming Features
 
