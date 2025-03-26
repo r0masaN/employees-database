@@ -17,18 +17,18 @@ void free_database(employee_database* db_ptr);
 // :D
 void drop_database(employee_database* db_ptr);
 
-void add_employee(employee_database* db_ptr, employee* emp_ptr);
+void add_employee(employee_database* db_ptr, const employee* emp_ptr);
 
 // just print actually, like others
-void find_by_id(employee_database* db, size_t id, uint8_t mask);
+void find_by_id(const employee_database* db, uint32_t id, uint8_t mask);
 
-void find_by_name(employee_database* db, const char* name);
+void find_by_name(const employee_database* db, const char name[]);
 
-void find_by_birthday(employee_database* db, date birthday, uint8_t mask);
+void find_by_birthday(const employee_database* db, date birthday, uint8_t mask);
 
-void find_by_age(employee_database* db, uint8_t age, uint8_t mask);
+void find_by_age(const employee_database* db, uint8_t age, uint8_t mask);
 
-void find_by_salary(employee_database* db, float salary, uint8_t mask);
+void find_by_salary(const employee_database* db, float salary, uint8_t mask);
 
 void print_database(const employee_database* db);
 

@@ -65,31 +65,25 @@ static inline void process_command_show() {
     print_database(db);
 }
 
-// TODO validation!!!!!!!!!!! 'add "<name>" dd.mm.yyyy salary'
-static void process_command_add(const char* command) {
-    char* ptr1 = strstr(command, "\"");
-    char* ptr2 = strstr(ptr1 + 1, "\"");
-    char name[51];
-    strncpy(name, ptr1 + 1, ptr2 - ptr1 - 1);
-    name[ptr2 - ptr1 - 1] = '\0';
+static void process_command_add(const char command[]) {
+    char name[51] = {0};
+    uint8_t day = 0, month = 0;
+    uint16_t year = 0;
+    float salary = 0.0f;
 
-    ptr1 = strstr(ptr2, " ");
-    ptr2 = strstr(ptr1 + 1, " ");
-    char birthday[11];
-    strncpy(birthday, ptr1 + 1, ptr2 - ptr1 - 1);
-    birthday[10] = '\0';
+    const size_t params_count = sscanf(command, "add \"%50[^\"]\" %hhu.%hhu.%hu %f", name, &day, &month, &year, &salary);
 
-    ptr2++;
-    size_t length = (size_t) fmin((double) strlen(ptr2), 15);
-    char salary[length + 1];
-    strncpy(salary, ptr2, length);
-    salary[length] = '\0';
+    if (params_count < 5) {
+        printf("Incorrect \"add\" usage!\n");
+        return;
+    }
 
-    employee* emp = create_employee(db->size, name, parse_from_string(birthday), strtof(salary, NULL));
+    const date birthday = {day, month, year};
+    const employee* const emp = create_employee(db->size, name, birthday, salary);
     add_employee(db, emp);
 }
 
-static const char* get_id_from_line(const char* line) {
+static const char* get_id_from_line(const char line[]) {
     const size_t length = (size_t) fmin((double) strlen(line), 10);
     char* const id = malloc(length + 1);
     strncpy(id, line, length);
@@ -97,12 +91,12 @@ static const char* get_id_from_line(const char* line) {
     return id;
 }
 
-static void process_command_find_by_id(const char* command) {
-    char* ptr1 = strstr(command, "<=");
-    char* ptr2 = strstr(command, "<");
-    char* ptr3 = strstr(command, ">=");
-    char* ptr4 = strstr(command, ">");
-    char* ptr5 = strstr(command, "=");
+static void process_command_find_by_id(const char command[]) {
+    const char* const ptr1 = strstr(command, "<=");
+    const char* const ptr2 = strstr(command, "<");
+    const char* const ptr3 = strstr(command, ">=");
+    const char* const ptr4 = strstr(command, ">");
+    const char* const ptr5 = strstr(command, "=");
     const char* id = NULL;
     uint8_t mask = 0b0;
 
@@ -126,9 +120,9 @@ static void process_command_find_by_id(const char* command) {
     find_by_id(db, (size_t) strtof(id, NULL), mask);
 }
 
-static void process_command_find_by_name(const char* command) {
-    char* ptr1 = strstr(command, "\"");
-    char* ptr2 = strstr(ptr1 + 1, "\"");
+static void process_command_find_by_name(const char command[]) {
+    const char* const ptr1 = strstr(command, "\"");
+    const char* const ptr2 = strstr(ptr1 + 1, "\"");
     char name[51];
     strncpy(name, ptr1 + 1, ptr2 - ptr1 - 1);
     name[ptr2 - ptr1 - 1] = '\0';
@@ -136,19 +130,19 @@ static void process_command_find_by_name(const char* command) {
     find_by_name(db, name);
 }
 
-static const char* get_birthday_from_line(const char* line) {
+static const char* get_birthday_from_line(const char line[]) {
     char* const birthday = malloc(11);
     strncpy(birthday, line, 10);
     birthday[10] = '\0';
     return birthday;
 }
 
-static void process_command_find_by_birthday(const char* command) {
-    char* ptr1 = strstr(command, "<=");
-    char* ptr2 = strstr(command, "<");
-    char* ptr3 = strstr(command, ">=");
-    char* ptr4 = strstr(command, ">");
-    char* ptr5 = strstr(command, "=");
+static void process_command_find_by_birthday(const char command[]) {
+    const char* const ptr1 = strstr(command, "<=");
+    const char* const ptr2 = strstr(command, "<");
+    const char* const ptr3 = strstr(command, ">=");
+    const char* const ptr4 = strstr(command, ">");
+    const char* const ptr5 = strstr(command, "=");
     const char* birthday = NULL;
     uint8_t mask = 0b0;
 
@@ -172,7 +166,7 @@ static void process_command_find_by_birthday(const char* command) {
     find_by_birthday(db, parse_from_string(birthday), mask);
 }
 
-static const char* get_age_from_line(const char* line) {
+static const char* get_age_from_line(const char line[]) {
     const size_t length = (size_t) fmin((double) strlen(line), 4);
     char* const age = malloc(length + 1);
     strncpy(age, line, length);
@@ -180,12 +174,12 @@ static const char* get_age_from_line(const char* line) {
     return age;
 }
 
-static void process_command_find_by_age(const char* command) {
-    char* ptr1 = strstr(command, "<=");
-    char* ptr2 = strstr(command, "<");
-    char* ptr3 = strstr(command, ">=");
-    char* ptr4 = strstr(command, ">");
-    char* ptr5 = strstr(command, "=");
+static void process_command_find_by_age(const char command[]) {
+    const char* const ptr1 = strstr(command, "<=");
+    const char* const ptr2 = strstr(command, "<");
+    const char* const ptr3 = strstr(command, ">=");
+    const char* const ptr4 = strstr(command, ">");
+    const char* const ptr5 = strstr(command, "=");
     const char* age = NULL;
     uint8_t mask = 0b0;
 
@@ -209,7 +203,7 @@ static void process_command_find_by_age(const char* command) {
     find_by_age(db, (uint8_t) strtof(age, NULL), mask);
 }
 
-static const char* get_salary_from_line(const char* line) {
+static const char* get_salary_from_line(const char line[]) {
     const size_t length = (size_t) fmin((double) strlen(line), 15);
     char* const salary = malloc(length + 1);
     strncpy(salary, line, length);
@@ -217,12 +211,12 @@ static const char* get_salary_from_line(const char* line) {
     return salary;
 }
 
-static void process_command_find_by_salary(const char* command) {
-    char* ptr1 = strstr(command, "<=");
-    char* ptr2 = strstr(command, "<");
-    char* ptr3 = strstr(command, ">=");
-    char* ptr4 = strstr(command, ">");
-    char* ptr5 = strstr(command, "=");
+static void process_command_find_by_salary(const char command[]) {
+    const char* const ptr1 = strstr(command, "<=");
+    const char* const ptr2 = strstr(command, "<");
+    const char* const ptr3 = strstr(command, ">=");
+    const char* const ptr4 = strstr(command, ">");
+    const char* const ptr5 = strstr(command, "=");
     const char* salary = NULL;
     uint8_t mask = 0b0;
 
@@ -271,10 +265,10 @@ static void process_command_drop() {
 }
 
 static inline void process_unknown_command() {
-    if (log_mode)printf("Unknown command. Try \"help\" to see all possible commands.\n");
+    if (log_mode) printf("Unknown command. Try \"help\" to see all possible commands.\n");
 }
 
-void process_command(const char* command) {
+void process_command(const char command[]) {
     if (strncmp(command, "quit", 4) == 0) {
         process_command_quit();
     } else if (strncmp(command, "nolog", 5) == 0) {
@@ -294,7 +288,7 @@ void process_command(const char* command) {
         process_command_find_by_name(command);
     } else if (strstr(command, "find birthday")) {
         process_command_find_by_birthday(command);
-    }  else if (strstr(command, "find age")) {
+    } else if (strstr(command, "find age")) {
         process_command_find_by_age(command);
     } else if (strstr(command, "find salary")) {
         process_command_find_by_salary(command);
