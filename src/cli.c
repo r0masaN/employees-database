@@ -6,7 +6,7 @@
 #include "..\include\cli.h"
 #include "..\include\employee_database.h"
 
-extern employee_database* db;
+extern employee_database* db_ptr;
 extern bool log_mode;
 
 static void process_command_quit() {
@@ -62,7 +62,7 @@ static void process_command_help() {
 }
 
 static inline void process_command_show() {
-    print_database(db);
+    print_database(db_ptr);
 }
 
 static void process_command_add(const char command[]) {
@@ -73,14 +73,15 @@ static void process_command_add(const char command[]) {
 
     const size_t params_count = sscanf(command, "add \"%50[^\"]\" %hhu.%hhu.%hu %f", name, &day, &month, &year, &salary);
 
-    if (params_count < 5) {
+    if (params_count != 5) {
         printf("Incorrect \"add\" usage!\n");
         return;
     }
 
     const date birthday = {day, month, year};
-    const employee* const emp = create_employee(db->size, name, birthday, salary);
-    add_employee(db, emp);
+    const uint32_t id = db_ptr->size == 0 ? 0 : db_ptr->table[db_ptr->size - 1].id + 1;
+    const employee* const emp = create_employee(id, name, birthday, salary);
+    add_employee(db_ptr, emp);
 }
 
 static const char* get_id_from_line(const char line[]) {
@@ -117,7 +118,7 @@ static void process_command_find_by_id(const char command[]) {
         mask = 0b10000;
     }
 
-    find_by_id(db, (size_t) strtof(id, NULL), mask);
+    find_by_id(db_ptr, (size_t) strtof(id, NULL), mask);
 }
 
 static void process_command_find_by_name(const char command[]) {
@@ -127,7 +128,7 @@ static void process_command_find_by_name(const char command[]) {
     strncpy(name, ptr1 + 1, ptr2 - ptr1 - 1);
     name[ptr2 - ptr1 - 1] = '\0';
 
-    find_by_name(db, name);
+    find_by_name(db_ptr, name);
 }
 
 static const char* get_birthday_from_line(const char line[]) {
@@ -163,7 +164,7 @@ static void process_command_find_by_birthday(const char command[]) {
         mask = 0b10000;
     }
 
-    find_by_birthday(db, parse_from_string(birthday), mask);
+    find_by_birthday(db_ptr, parse_from_string(birthday), mask);
 }
 
 static const char* get_age_from_line(const char line[]) {
@@ -200,7 +201,7 @@ static void process_command_find_by_age(const char command[]) {
         mask = 0b10000;
     }
 
-    find_by_age(db, (uint8_t) strtof(age, NULL), mask);
+    find_by_age(db_ptr, (uint8_t) strtof(age, NULL), mask);
 }
 
 static const char* get_salary_from_line(const char line[]) {
@@ -237,8 +238,19 @@ static void process_command_find_by_salary(const char command[]) {
         mask = 0b10000;
     }
 
+    find_by_salary(db_ptr, strtof(salary, NULL), mask);
+}
 
-    find_by_salary(db, strtof(salary, NULL), mask);
+static void process_command_delete_by_id(const char command[]) {
+    uint32_t id = 0;
+    const size_t params_count = sscanf(command, "delete id=%u", &id);
+
+    if (params_count != 1) {
+        printf("Incorrect \"delete\" usage!\n");
+        return;
+    }
+
+    delete_by_id(db_ptr, id);
 }
 
 static void process_command_drop() {
@@ -252,7 +264,7 @@ static void process_command_drop() {
         if (strncmp(answer, "y", 1) == 0) {
             is_answered = true;
             if (log_mode) printf("Dropping database...\n");
-            drop_database(db);
+            drop_database(db_ptr);
 
         } else if (strncmp(answer, "n", 1) == 0) {
             is_answered = true;
@@ -292,6 +304,8 @@ void process_command(const char command[]) {
         process_command_find_by_age(command);
     } else if (strstr(command, "find salary")) {
         process_command_find_by_salary(command);
+    } else if (strstr(command, "delete id=")) {
+        process_command_delete_by_id(command);
 
     } else if (strncmp(command, "drop", 4) == 0) {
         process_command_drop();
