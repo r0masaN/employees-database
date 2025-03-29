@@ -162,18 +162,18 @@ void find_by_id(const employee_database* const db_ptr, const uint32_t id, const 
 
 void find_by_name(const employee_database* const db_ptr, const char name[]) {
     const employee* const table = db_ptr->table;
-    size_t counter = 0;
+    bool is_found = false;
 
     for (size_t i = 0; i < db_ptr->size; i++) {
         // if employee's name contains name passed by user in cli
         if (strstr(table[i].name, name)) {
-            counter++;
+            is_found = true;
             printf("Employee \"%s\" found: ", name);
             print_employee(&table[i]);
         }
     }
 
-    if (!counter) printf("Employee \"%s\" not found!\n", name);
+    if (!is_found) printf("Employee \"%s\" not found!\n", name);
 }
 
 void find_by_birthday(const employee_database* const db_ptr, const date birthday, const uint8_t mask) {
