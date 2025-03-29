@@ -131,16 +131,16 @@ void add_employee(employee_database* const db_ptr, const employee* const emp_ptr
 }
 
 // just print actually, like others
-void find_by_id(const employee_database* const db, const uint32_t id, const uint8_t mask) {
+void find_by_id(const employee_database* const db_ptr, const uint32_t id, const uint8_t mask) {
     // if mask idk from where, must be <=, <, >=, > or ==
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db->table;
+        const employee* const table = db_ptr->table;
         size_t counter = 0;
 
-        for (size_t i = 0; i < db->size; i++) {
+        for (size_t i = 0; i < db_ptr->size; i++) {
             const uint32_t emp_id = table[i].id;
 
             if (mask & LESS_OR_EQUAL && emp_id <= id ||
@@ -160,31 +160,31 @@ void find_by_id(const employee_database* const db, const uint32_t id, const uint
     }
 }
 
-void find_by_name(const employee_database* const db, const char name[]) {
-    const employee* const table = db->table;
-    size_t counter = 0;
+void find_by_name(const employee_database* const db_ptr, const char name[]) {
+    const employee* const table = db_ptr->table;
+    bool is_found = false;
 
-    for (size_t i = 0; i < db->size; i++) {
+    for (size_t i = 0; i < db_ptr->size; i++) {
         // if employee's name contains name passed by user in cli
         if (strstr(table[i].name, name)) {
-            counter++;
+            is_found = true;
             printf("Employee \"%s\" found: ", name);
             print_employee(&table[i]);
         }
     }
 
-    if (!counter) printf("Employee \"%s\" not found!\n", name);
+    if (!is_found) printf("Employee \"%s\" not found!\n", name);
 }
 
-void find_by_birthday(const employee_database* const db, const date birthday, const uint8_t mask) {
+void find_by_birthday(const employee_database* const db_ptr, const date birthday, const uint8_t mask) {
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db->table;
+        const employee* const table = db_ptr->table;
         size_t counter = 0;
 
-        for (size_t i = 0; i < db->size; i++) {
+        for (size_t i = 0; i < db_ptr->size; i++) {
             // comparison mask (birthday from user and actual employee's one)
             const uint8_t m = compare_date(table[i].birthday, birthday);
 
@@ -203,15 +203,15 @@ void find_by_birthday(const employee_database* const db, const date birthday, co
     }
 }
 
-void find_by_age(const employee_database* const db, const uint8_t age, const uint8_t mask) {
+void find_by_age(const employee_database* const db_ptr, const uint8_t age, const uint8_t mask) {
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db->table;
+        const employee* const table = db_ptr->table;
         size_t counter = 0;
 
-        for (size_t i = 0; i < db->size; i++) {
+        for (size_t i = 0; i < db_ptr->size; i++) {
             const date emp_birthday = table[i].birthday;
             const uint8_t emp_age = calculate_age(emp_birthday);
 
@@ -232,15 +232,15 @@ void find_by_age(const employee_database* const db, const uint8_t age, const uin
     }
 }
 
-void find_by_salary(const employee_database* const db, const float salary, const uint8_t mask) {
+void find_by_salary(const employee_database* const db_ptr, const float salary, const uint8_t mask) {
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db->table;
+        const employee* const table = db_ptr->table;
         size_t counter = 0;
 
-        for (size_t i = 0; i < db->size; i++) {
+        for (size_t i = 0; i < db_ptr->size; i++) {
             const float emp_salary = table[i].salary;
 
             if (mask & LESS_OR_EQUAL && emp_salary <= salary ||
@@ -259,14 +259,35 @@ void find_by_salary(const employee_database* const db, const float salary, const
     }
 }
 
-void print_database(const employee_database* const db) {
-    const size_t db_size = db->size;
+void delete_by_id(employee_database* const db_ptr, const uint32_t id) {
+    bool deleted = false;
+    employee* const table = db_ptr->table;
+    const size_t size = db_ptr->size;
+
+    for (size_t i = 0; i < size; i++) {
+        if (table[i].id == id) {
+            for (size_t j = i; j < size - 1; j++) {
+                table[j] = table[j + 1];
+            }
+
+            memset(&table[--(db_ptr->size)], 0, sizeof(employee));
+            deleted = true;
+            break;
+        }
+    }
+
+    if (!deleted) printf("Employee with id = %u not found!\n", id);
+    else printf("Employee with id = %u has been successfully deleted!\n", id);
+}
+
+void print_database(const employee_database* const db_ptr) {
+    const size_t db_size = db_ptr->size;
     if (db_size == 0) {
         printf("Employees database is empty.\n");
 
     } else {
         printf("Employees database (%zu records):\n", db_size);
-        const employee* table = db->table;
+        const employee* table = db_ptr->table;
 
         for (size_t i = 0; i < db_size; i++) print_employee(&table[i]);
     }

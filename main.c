@@ -5,13 +5,13 @@
 #include "include\employee_database.h"
 
 bool log_mode;
-employee_database* db;
+employee_database* db_ptr;
 
 int main() {
     log_mode = true;
-    db = create_database(5, 100);
+    db_ptr = create_database(5, 100);
 
-    if (db) {
+    if (db_ptr) {
         while (true) {
             char command[81];
             fgets(command, 81, stdin);
