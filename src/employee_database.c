@@ -12,15 +12,15 @@ MORE_OR_EQUAL = 0b100, // >=
 MORE = 0b1000, // >
 EQUAL = 0b10000; // ==
 
-employee_database* create_database(const size_t capacity, const size_t max_capacity) {
-    employee_database* const db = malloc(sizeof(employee_database));
+employee_database *create_database(const size_t capacity, const size_t max_capacity) {
+    employee_database *const db = malloc(sizeof(employee_database));
     if (!db) {
         printf("Error creating employees database of capacity %zu!\n", capacity);
         return NULL;
     }
     memset(db, 0, sizeof(employee_database)); // clean memory before using!
 
-    employee* const new_table = calloc(capacity, sizeof(employee));
+    employee *const new_table = calloc(capacity, sizeof(employee));
     if (!new_table) {
         memset(db, 0, sizeof(employee_database)); // clean memory after using!
         free(db);
@@ -40,8 +40,8 @@ employee_database* create_database(const size_t capacity, const size_t max_capac
     return db;
 }
 
-void free_database(employee_database* const db_ptr) {
-    employee* const table = db_ptr->table;
+void free_database(employee_database *const db_ptr) {
+    employee *const table = db_ptr->table;
 
     memset(table, 0, db_ptr->size * sizeof(employee)); // clean memory after using!
     free(table);
@@ -52,16 +52,16 @@ void free_database(employee_database* const db_ptr) {
 }
 
 // moodle simulator =)
-void drop_database(employee_database* const db_ptr) {
+void drop_database(employee_database *const db_ptr) {
     const size_t start_capacity = db_ptr->start_capacity;
 
     // first try to create a new table instead of just replacing old with it right away
-    employee* const new_table = calloc(start_capacity, sizeof(employee));
+    employee *const new_table = calloc(start_capacity, sizeof(employee));
     if (new_table) {
         memset(new_table, 0, start_capacity * sizeof(employee)); // clean memory before using!
 
         // bye-bye, old table!
-        employee* old_table = db_ptr->table;
+        employee *old_table = db_ptr->table;
         memset(old_table, 0, db_ptr->size * sizeof(employee)); // clean memory after using!
         free(old_table);
 
@@ -80,7 +80,7 @@ void drop_database(employee_database* const db_ptr) {
     }
 }
 
-void add_employee(employee_database* const db_ptr, const employee* const emp_ptr) {
+void add_employee(employee_database *const db_ptr, const employee *const emp_ptr) {
     const size_t old_capacity = db_ptr->capacity, max_capacity = db_ptr->max_capacity, size = db_ptr->size;
     bool can_add = true; // by default, we can add a new employee, but...
 
@@ -90,13 +90,13 @@ void add_employee(employee_database* const db_ptr, const employee* const emp_ptr
         if (old_capacity < max_capacity) {
             const size_t new_capacity = (size_t) fmin((double) old_capacity * 1.5, (double) max_capacity);
 
-            employee* const new_table = calloc(new_capacity, sizeof(employee));
+            employee *const new_table = calloc(new_capacity, sizeof(employee));
             if (new_table) {
                 memset(new_table, 0, new_capacity * sizeof(employee)); // clean memory before using!
 
                 printf("Successfully increased capacity from %zu to %zu\n", old_capacity, new_capacity);
                 // copy data from the old table to the new one
-                employee* old_table = db_ptr->table;
+                employee *old_table = db_ptr->table;
                 memcpy(new_table, old_table, size * sizeof(employee));
 
                 memset(old_table, 0, size * sizeof(employee));  // clean memory after using!
@@ -131,13 +131,13 @@ void add_employee(employee_database* const db_ptr, const employee* const emp_ptr
 }
 
 // just print actually, like others
-void find_by_id(const employee_database* const db_ptr, const uint32_t id, const uint8_t mask) {
+void find_by_id(const employee_database *const db_ptr, const uint32_t id, const uint8_t mask) {
     // if mask idk from where, must be <=, <, >=, > or ==
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db_ptr->table;
+        const employee *const table = db_ptr->table;
         size_t counter = 0;
 
         for (size_t i = 0; i < db_ptr->size; i++) {
@@ -160,8 +160,8 @@ void find_by_id(const employee_database* const db_ptr, const uint32_t id, const 
     }
 }
 
-void find_by_name(const employee_database* const db_ptr, const char name[]) {
-    const employee* const table = db_ptr->table;
+void find_by_name(const employee_database *const db_ptr, const char name[]) {
+    const employee *const table = db_ptr->table;
     bool is_found = false;
 
     for (size_t i = 0; i < db_ptr->size; i++) {
@@ -176,12 +176,12 @@ void find_by_name(const employee_database* const db_ptr, const char name[]) {
     if (!is_found) printf("Employee \"%s\" not found!\n", name);
 }
 
-void find_by_birthday(const employee_database* const db_ptr, const date birthday, const uint8_t mask) {
+void find_by_birthday(const employee_database *const db_ptr, const date birthday, const uint8_t mask) {
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db_ptr->table;
+        const employee *const table = db_ptr->table;
         size_t counter = 0;
 
         for (size_t i = 0; i < db_ptr->size; i++) {
@@ -203,12 +203,12 @@ void find_by_birthday(const employee_database* const db_ptr, const date birthday
     }
 }
 
-void find_by_age(const employee_database* const db_ptr, const uint8_t age, const uint8_t mask) {
+void find_by_age(const employee_database *const db_ptr, const uint8_t age, const uint8_t mask) {
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db_ptr->table;
+        const employee *const table = db_ptr->table;
         size_t counter = 0;
 
         for (size_t i = 0; i < db_ptr->size; i++) {
@@ -232,12 +232,12 @@ void find_by_age(const employee_database* const db_ptr, const uint8_t age, const
     }
 }
 
-void find_by_salary(const employee_database* const db_ptr, const float salary, const uint8_t mask) {
+void find_by_salary(const employee_database *const db_ptr, const float salary, const uint8_t mask) {
     if (!(mask & (LESS_OR_EQUAL | LESS | MORE_OR_EQUAL | MORE | EQUAL))) {
         printf("Employees not found!\n");
 
     } else {
-        const employee* const table = db_ptr->table;
+        const employee *const table = db_ptr->table;
         size_t counter = 0;
 
         for (size_t i = 0; i < db_ptr->size; i++) {
@@ -259,9 +259,9 @@ void find_by_salary(const employee_database* const db_ptr, const float salary, c
     }
 }
 
-void delete_by_id(employee_database* const db_ptr, const uint32_t id) {
+void delete_by_id(employee_database *const db_ptr, const uint32_t id) {
     bool deleted = false;
-    employee* const table = db_ptr->table;
+    employee *const table = db_ptr->table;
     const size_t size = db_ptr->size;
 
     for (size_t i = 0; i < size; i++) {
@@ -280,14 +280,14 @@ void delete_by_id(employee_database* const db_ptr, const uint32_t id) {
     else printf("Employee with id = %u has been successfully deleted!\n", id);
 }
 
-void print_database(const employee_database* const db_ptr) {
+void print_database(const employee_database *const db_ptr) {
     const size_t db_size = db_ptr->size;
     if (db_size == 0) {
         printf("Employees database is empty.\n");
 
     } else {
         printf("Employees database (%zu records):\n", db_size);
-        const employee* table = db_ptr->table;
+        const employee *table = db_ptr->table;
 
         for (size_t i = 0; i < db_size; i++) print_employee(&table[i]);
     }

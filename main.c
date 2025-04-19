@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "include\cli.h"
 #include "include\employee_database.h"
@@ -12,7 +13,7 @@ int main() {
     db_ptr = create_database(5, 100);
 
     if (db_ptr) {
-        while (true) {
+        while (1) {
             char command[81];
             fgets(command, 81, stdin);
             command[strlen(command) - 1] = '\0'; // cuts off unnecessary '\n' at the end of the line
