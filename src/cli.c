@@ -2,16 +2,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
 
 #include "..\include\cli.h"
 #include "..\include\employee_database.h"
+#include "..\include\serialize.h"
 
-extern employee_database* db_ptr;
+extern employee_database *db_ptr;
 extern bool log_mode;
 
 // to confirm important actions
-static bool are_you_sure() {
-    printf("Are you sure? [y/n]\n");
+static bool are_you_sure(const char *const restrict additional_message) {
+    printf("Are you sure?");
+    if (additional_message != NULL) printf(" %s ", additional_message);
+    printf(" [y/n]\n");
     char line[81] = {0};
     char first_word[11] = {0};
 
@@ -31,7 +35,7 @@ static bool are_you_sure() {
 }
 
 static void process_command_quit() {
-    if (are_you_sure()) {
+    if (are_you_sure(NULL)) {
         if (log_mode) printf("Shutting down...\n");
         exit(0);
     } else if (log_mode) {
@@ -68,6 +72,8 @@ static void process_command_help() {
     printf("find name=[value] - finds an employees which names contains given string;\n");
     printf("find [id/birthday/age/salary][<=/</>=/=][value] - finds an employees satisfying given condition.\n");
     printf("delete id=[id] - deletes an employee with given id.\n");
+    printf("save <file> - serializes database into the given file.\n");
+    printf("load <file> - deserializes database from the given file.\n");
 }
 
 static inline void process_command_show() {
@@ -89,18 +95,18 @@ static void process_command_add(const char command[]) {
 
     const date birthday = {day, month, year};
     const uint32_t id = db_ptr->size == 0 ? 0 : db_ptr->table[db_ptr->size - 1].id + 1;
-    const employee* const emp_ptr = create_employee(id, name, birthday, salary);
+    const employee *const emp_ptr = create_employee(id, name, birthday, salary);
     add_employee(db_ptr, emp_ptr);
 }
 
 static ptr_and_mask get_ptr_and_mask(const char command[]) {
-    const char* const ptr1 = strstr(command, "<=");
-    const char* const ptr2 = strstr(command, "<");
-    const char* const ptr3 = strstr(command, ">=");
-    const char* const ptr4 = strstr(command, ">");
-    const char* const ptr5 = strstr(command, "=");
+    const char *const ptr1 = strstr(command, "<=");
+    const char *const ptr2 = strstr(command, "<");
+    const char *const ptr3 = strstr(command, ">=");
+    const char *const ptr4 = strstr(command, ">");
+    const char *const ptr5 = strstr(command, "=");
     uint8_t mask = 0b0;
-    const char* f_ptr = NULL;
+    const char *f_ptr = NULL;
 
     if (ptr1) {
         f_ptr = ptr1 + 2;
@@ -200,7 +206,7 @@ static void process_command_delete_by_id(const char command[]) {
         return;
     }
 
-    if (are_you_sure()) {
+    if (are_you_sure(NULL)) {
         if (log_mode) printf("Deleting employee...\n");
         delete_by_id(db_ptr, id);
     } else if (log_mode) {
@@ -208,8 +214,39 @@ static void process_command_delete_by_id(const char command[]) {
     }
 }
 
+static void process_command_save(const char command[]) {
+    char filename[71] = {0};
+    const size_t params_count = sscanf(command, "save %s", filename);
+
+    if (params_count != 1) {
+        printf("Incorrect \"save\" usage!\n");
+        return;
+    }
+
+    if (log_mode) printf("Serializing database...\n");
+    if (serialize(filename, db_ptr) != 0) fprintf(stderr, "Error serializing database!\n");
+}
+
+static void process_command_load(const char command[]) {
+    char filename[71] = {0};
+    const size_t params_count = sscanf(command, "load %s", filename);
+
+    if (params_count != 1) {
+        printf("Incorrect \"load\" usage!\n");
+        return;
+    }
+
+    // TODO ask `are_you_sure()` ONLY if db has unsaved changes (if it's empty - no reason asking)
+    if (are_you_sure(NULL)) {
+        if (log_mode) printf("Deserializing database...\n");
+        if (deserialize(filename, db_ptr) != 0) fprintf(stderr, "Error deserializing database!\n");
+    } else if (log_mode) {
+        printf("Deserializing database is canceled.\n");
+    }
+}
+
 static void process_command_drop() {
-    if (are_you_sure()) {
+    if (are_you_sure(NULL)) {
         if (log_mode) printf("Dropping database...\n");
         drop_database(db_ptr);
     } else if (log_mode) {
@@ -247,6 +284,11 @@ void process_command(const char command[]) {
         process_command_find_by_salary(command);
     } else if (strstr(command, "delete id=")) {
         process_command_delete_by_id(command);
+
+    } else if (strstr(command, "save")) {
+        process_command_save(command);
+    } else if (strstr(command, "load")) {
+        process_command_load(command);
 
     } else if (strncmp(command, "drop", 4) == 0) {
         process_command_drop();

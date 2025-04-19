@@ -11,4 +11,6 @@ add_executable(employees_database main.c
         src/employee.c
         src/employee_database.c
         include/cli.h
-        src/cli.c)
+        src/cli.c
+        include/serialize.h
+        src/serialize.c)
